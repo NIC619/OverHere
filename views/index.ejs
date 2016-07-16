@@ -1,0 +1,12 @@
+<% layout('layout') -%>
+<script>
+var logged = <%= logged%>;
+</script>
+<hr>
+<h1><%= title %></h1>
+    <p>Hi!  <% if(logged ==false){%>
+    		Guest
+			<% }else{%>
+			<%= username%>
+			<% } %>
+    , Welcome to <%= title%></p>
