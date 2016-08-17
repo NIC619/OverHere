@@ -6,10 +6,9 @@
       html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
 </style>
 <script type="text/javascript">
-      var map;
+    var map;
 
-      function initialize() {
-        
+    function initialize() {
         // Create an array of styles.
         var styles = [
           {
@@ -53,24 +52,23 @@
 
         //Associate the styled map with the MapTypeId and set it to display.
         map.mapTypes.set('map_style', styledMap);
-        map.setMapTypeId('map_style');
+        //map.setMapTypeId('map_style');    //display styled map
 
 
         // Create a <script> tag and set the USGS URL as the source.
         var script = document.createElement('script');
-
         script.src = 'http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojsonp';
         document.getElementsByTagName('head')[0].appendChild(script);
-
+        
         map.data.setStyle(function(feature) {
-          var magnitude = feature.getProperty('mag');
-          return {
-            icon: getCircle(magnitude)
-          };
+            var magnitude = feature.getProperty('mag');
+            return {
+                icon: getCircle(magnitude)
+            };
         });
-      }
+    }
 
-      function getCircle(magnitude) {
+    function getCircle(magnitude) {
         var circle = {
           path: google.maps.SymbolPath.CIRCLE,
           fillColor: 'red',
@@ -80,12 +78,12 @@
           strokeWeight: .5
         };
         return circle;
-      }
+    }
 
-      function eqfeed_callback(results) {
+    function eqfeed_callback(results) {
         //console.log(results);
         map.data.addGeoJson(results);
-      }
+    }
       
 </script>
 <script async defer
