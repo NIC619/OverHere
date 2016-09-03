@@ -11,7 +11,7 @@ var engine = require('ejs-mate');
 
 var port_num = process.env.PORT || 14741;
 
-var routes = require('./routes/index');
+var index = require('./routes/index');
 //var users = require('./routes/users');
 //var logins = require('./routes/login'); 
 //var neighbor_ranks = require('./routes/neighbor_ranks');
@@ -33,7 +33,7 @@ app.use(cookieParser());
 app.use(session({secret: 'overhere_secret' , resave: false , saveUninitialized: false}));//  session for login
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
+app.use('/', index);
 //app.use('/users', users);
 //app.use('/logins', logins);
 //app.use('/neighbor_ranks' , neighbor_ranks);
