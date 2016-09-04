@@ -12,7 +12,7 @@ router.get('/', function(req, res) {
 router.get('/ajax',function(req,res) {
 	var location_list = [];
 	markers.find(function(err,marker_list){
-		//console.log(marker_list);
+		console.log(marker_list);
 		for (i in marker_list){
 			location_list.push(marker_list[i]);
 		}
@@ -24,10 +24,22 @@ router.get('/ajax',function(req,res) {
 
 router.get('/newLocation',function(req,res) {
 	var newMarker = new markers();
-	//console.log(req.query.title);
+	console.log(req.query.name);
 	newMarker.lat = req.query.lat;
 	newMarker.lng = req.query.lng;
+	newMarker.name = req.query.name;
 	newMarker.title = req.query.title;
+	newMarker.save();
+	res.send("complete");
+});
+
+router.post('/newLocation',function(req,res) {
+	var newMarker = new markers();
+	//console.log(req.body.title);
+	newMarker.lat = req.body.lat;
+	newMarker.lng = req.body.lng;
+	newMarker.name = req.body.name;
+	newMarker.title = req.body.title;
 	newMarker.save();
 	res.send("complete");
 });

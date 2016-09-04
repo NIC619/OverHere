@@ -4,6 +4,7 @@ var Schema = mongoose.Schema;
 var marker_geo = new Schema({
 	lat: Number,
 	lng: Number,
+	name: String,
 	title: String
 });
 
