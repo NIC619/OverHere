@@ -50,9 +50,10 @@
             map: map,
             title: "stage1"
         });
-
-        var infoWindowContent = "<form id='luda' action='/newLocation' method='POST' accept-charset='utf-8'></form><b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br><b>Name</b>: <input type='text' id='name'><br><input type='button' value='Upload' onclick='addMarker(" + marker.get('position').lat() +", " + marker.get('position').lng() +")' />";
-
+        
+        var infoWindowContent = "<form id='luda' action='/newLocation' method='POST' accept-charset='utf-8'></form><b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br><b>Name</b>: <input type='text' id='name'><br><input type='button' value='Add' onclick='addMarker()' />";
+        
+    
         var infowindow = new google.maps.InfoWindow({
             content: infoWindowContent
         });
@@ -64,7 +65,7 @@
         
     }
 
-    function addMarker(lat, lng) {
+    function addMarker() {
         
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -72,8 +73,15 @@
                 console.log(xhttp.responseText);
             }
         };
-        xhttp.open("GET", "http://localhost:14741/newLocation?lat=" + lat + "&lng=" + lng + "&name=" + name +"&title=test2",true);
-        xhttp.send();
+        /* submit using GET Method*/
+        //xhttp.open("GET", "http://localhost:14741/newLocation?lat=" + lat + "&lng=" + lng + "&name=" + document.getElementById("name").value +"&title=get",true);
+        //xhttp.send();
+        
+        /* submit using POST Method */
+        var post_param = 'lat=' + marker.get('position').lat() + '&lng=' + marker.get('position').lng() + '&name=' + document.getElementById("name").value + '&title=post';
+        xhttp.open("POST", "http://localhost:14741/newLocation",true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send(post_param);    
         
     }
 
@@ -112,7 +120,7 @@
    		  }
 
 		loadMarkers();
-        // This event listener will call addMarker() when the map is clicked.
+        // This event listener will call clickMap() when the map is clicked.
         map.addListener('click', function(event) {
             //console.log(event);
             clickMap(event.latLng);

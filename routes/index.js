@@ -6,7 +6,7 @@ var router = express.Router();
 /* GET home page. */
 router.get('/', function(req, res) {
 	//markers.find().remove().exec();
-	res.render('test', {title: 'OverHere'});
+	res.render('layout_body_test', {title: 'OverHere'});
 });
 
 router.get('/ajax',function(req,res) {
@@ -24,7 +24,7 @@ router.get('/ajax',function(req,res) {
 
 router.get('/newLocation',function(req,res) {
 	var newMarker = new markers();
-	console.log(req.query.name);
+	//console.log('name: ' + req.query.name);
 	newMarker.lat = req.query.lat;
 	newMarker.lng = req.query.lng;
 	newMarker.name = req.query.name;
@@ -35,7 +35,7 @@ router.get('/newLocation',function(req,res) {
 
 router.post('/newLocation',function(req,res) {
 	var newMarker = new markers();
-	//console.log(req.body.title);
+	//console.log(req.body.name);
 	newMarker.lat = req.body.lat;
 	newMarker.lng = req.body.lng;
 	newMarker.name = req.body.name;
