@@ -51,8 +51,11 @@
             title: "stage1"
         });
         
-        var infoWindowContent = "<form id='luda' action='/newLocation' method='POST' accept-charset='utf-8'></form><b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br><b>Name</b>: <input type='text' id='name'><br><input type='button' value='Add' onclick='addMarker()' />";
-        
+        var infoWindowContent = "<form id='formAddMarker' action='/newLocation' method='POST' accept-charset='utf-8'>\
+            <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
+            <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
+            <b>Name</b>: <input type='text' id='name' name='name'><br>\
+            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
     
         var infowindow = new google.maps.InfoWindow({
             content: infoWindowContent
@@ -65,34 +68,25 @@
         
     }
 
-    function addMarker() {
+    function addMarker(thisForm) {
+        var formAddMarker = $(thisForm);
         
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4 && xhttp.status == 200) {
-                console.log(xhttp.responseText);
+        $.ajax({
+            type:   formAddMarker.attr('method'),
+            url:    formAddMarker.attr('action'),
+            data:   formAddMarker.serialize(),
+            success: function (res) {
+                formAddMarker.find('#button').val('Success!');
+                loadMarkers();
             }
-        };
-        /* submit using GET Method*/
-        //xhttp.open("GET", "http://localhost:14741/newLocation?lat=" + lat + "&lng=" + lng + "&name=" + document.getElementById("name").value +"&title=get",true);
-        //xhttp.send();
-        
-        /* submit using POST Method */
-        var post_param = 'lat=' + marker.get('position').lat() + '&lng=' + marker.get('position').lng() + '&name=' + document.getElementById("name").value + '&title=post';
-        xhttp.open("POST", "http://localhost:14741/newLocation",true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send(post_param);    
-        
+        });
     }
 
-
-
     function initialize() {
-      
         // Create a map object, and include the MapTypeId to add
         // to the map type control.
         var mapOptions = {
-          center: { lat: 23.997, lng: 120.324},
+          center: { lat: 25.0193162, lng: 121.5414898},
           zoom: 8,
           mapTypeControlOptions: {
             mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.HYBRID]    //, 'map_style']

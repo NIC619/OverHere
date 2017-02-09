@@ -12,7 +12,8 @@ router.get('/', function(req, res) {
 router.get('/ajax',function(req,res) {
 	var location_list = [];
 	markers.find(function(err,marker_list){
-		console.log(marker_list);
+		//console.log(marker_list);
+		console.log(marker_list.length);
 		for (i in marker_list){
 			location_list.push(marker_list[i]);
 		}
@@ -35,7 +36,7 @@ router.get('/newLocation',function(req,res) {
 
 router.post('/newLocation',function(req,res) {
 	var newMarker = new markers();
-	//console.log(req.body.name);
+	console.log(req.body.name);
 	newMarker.lat = req.body.lat;
 	newMarker.lng = req.body.lng;
 	newMarker.name = req.body.name;
