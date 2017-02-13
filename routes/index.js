@@ -2,6 +2,11 @@ var mongoose = require('mongoose');
 var markers = mongoose.model('marker_geo');
 var express = require('express');
 var router = express.Router();
+var multer = require('multer');
+var path = require('path');
+var upload = multer({
+	dest: 	'../pubic/')
+})
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -34,14 +39,15 @@ router.get('/newLocation',function(req,res) {
 	res.send("complete");
 });
 
-router.post('/newLocation',function(req,res) {
+router.post('/newLocation',upload.single('img') ,function(req,res) {
 	var newMarker = new markers();
-	console.log(req.body.name);
+	console.log(req.file);
+	//console.log(req.body.name);
 	newMarker.lat = req.body.lat;
 	newMarker.lng = req.body.lng;
 	newMarker.name = req.body.name;
 	newMarker.title = req.body.title;
-	newMarker.save();
+	//newMarker.save();
 	res.send("complete");
 });
 
