@@ -5,7 +5,18 @@ var router = express.Router();
 var multer = require('multer');
 var path = require('path');
 var upload = multer({
-	dest: 	'../pubic/')
+	dest: 	'./public/gallery',
+	limits: {	fileSize:	5242880},
+	fileFilter: function(req, file, cb) {
+		var type = file.mimetype;
+		console.log(type);
+		var typeArray = type.split("/");
+		if (typeArray[0] == "image") {
+			cb(null, true);
+		}else {
+			cb(null, false);
+  }
+	}
 })
 
 /* GET home page. */
@@ -14,7 +25,7 @@ router.get('/', function(req, res) {
 	res.render('layout_body_test', {title: 'OverHere'});
 });
 
-router.get('/ajax',function(req,res) {
+router.get('/ajax', function(req,res) {
 	var location_list = [];
 	markers.find(function(err,marker_list){
 		//console.log(marker_list);
@@ -28,7 +39,7 @@ router.get('/ajax',function(req,res) {
 	
 });
 
-router.get('/newLocation',function(req,res) {
+router.get('/newLocation', function(req,res) {
 	var newMarker = new markers();
 	//console.log('name: ' + req.query.name);
 	newMarker.lat = req.query.lat;
@@ -39,15 +50,20 @@ router.get('/newLocation',function(req,res) {
 	res.send("complete");
 });
 
-router.post('/newLocation',upload.single('img') ,function(req,res) {
+router.post('/newLocation', upload.array('img', 3) , function(req,res) {
 	var newMarker = new markers();
-	console.log(req.file);
+	//console.log(req.files);
 	//console.log(req.body.name);
+	var _photoIDs = [];
+	for (i in req.files) {
+		_photoIDs.push(req.files[i].filename);
+	}
 	newMarker.lat = req.body.lat;
 	newMarker.lng = req.body.lng;
 	newMarker.name = req.body.name;
 	newMarker.title = req.body.title;
-	//newMarker.save();
+	newMarker.photoIDs = _photoIDs;
+	newMarker.save();
 	res.send("complete");
 });
 

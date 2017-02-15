@@ -5,7 +5,8 @@ var marker_geo = new Schema({
 	lat: Number,
 	lng: Number,
 	name: String,
-	title: String
+	title: String,
+	photoIDs: [String]
 });
 
 mongoose.model('marker_geo' , marker_geo);

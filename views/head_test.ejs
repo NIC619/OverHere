@@ -7,11 +7,22 @@
 </style>
 <script type="text/javascript">
     var map;
-    var locInfoBundleList = [];
+    //var locInfoBundleList = [];
     
     function attachInfoWindow(marker, locationInfo) {
+        var photoHtml = '<div>';
+        for (var i in locationInfo.photoIDs){
+            photoHtml += "<img src='/gallery/" + locationInfo.photoIDs[i] + "' \
+            height='150' width='150' alt='Fail loading image...'>";
+        }
+        /*
+        因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
+        */
+
         var infowindow = new google.maps.InfoWindow({
-            content: "<h3>" + locationInfo.name + "</h3><b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<div><button onclick='deleteMarker()'>Do Sth</button></div>"
+            content:    "Contributors: <b>" + locationInfo.name + "</b><br>\
+                        <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
+                        + photoHtml + "</div><div><button onclick='deleteMarker()'>Do Sth</button></div>"
         });
         marker.addListener('click',function(){
             infowindow.open(marker.get('map'), marker);
@@ -34,9 +45,9 @@
 		        		title: location_list[i].title
 		        	});
                     attachInfoWindow(marker, location_list[i]);
-                    var locInfoBundle = { local: marker, db: location_list[i]};
+                    //var locInfoBundle = { local: marker, db: location_list[i]};
                     //console.log(locInfoBundle);
-                    locInfoBundleList.push(locInfoBundle);
+                    //locInfoBundleList.push(locInfoBundle);
         		}
     		}
   		};
@@ -52,11 +63,11 @@
         });
         
         var infoWindowContent = "<form id='formAddMarker' action='/newLocation' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+            <b>Title</b>: <input type='text' name='title' size='10'><br>\
             <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
             <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
             <b>Name</b>: <input type='text' id='name' name='name'><br>\
-            <input type='hidden' name='title' value='ajax'>\
-            <input type='file' name='img' accept='image/*'><br>\
+            <input type='file' name='img' accept='image/*' multiple><br>\
             <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
     
         var infowindow = new google.maps.InfoWindow({
@@ -76,15 +87,19 @@
         newf.append('lat', formAddMarker.find('input[name="lat"]').val());
         newf.append('lng', formAddMarker.find('input[name="lng"]').val());
         newf.append('name', formAddMarker.find('input[name="name"]').val());
-        newf.append('img', formAddMarker.find('input[type="file"]')[0].files[0]);
+        newf.append('title', formAddMarker.find('input[name="title"]').val());
+        //console.log(formAddMarker.find('input[type="file"]')[0].files);
+        for (var i = 0; i < formAddMarker.find('input[type="file"]')[0].files.length; i++) {
+            newf.append('img', formAddMarker.find('input[type="file"]')[0].files[i]);
+            console.log(formAddMarker.find('input[type="file"]')[0].files[i]);
+        }
+        
         /*  一開始遇到的問題轉FormData，但是thisForm不是一個standard javascript object
             導致FormData內容錯誤讓伺服器端讀不到值。
             改用append之後，卻沒發現img的value是formAddMarker.find('input[name="img"]').val()，
             只是一個單純的路徑，導致伺服器無法解析成檔案。
             後來改成formAddMarker.find('input[type="file"]')[0].files[0])，這才是一個file的object
         */
-        //console.log(formAddMarker.find('input[name="lat"]').val());
-        //console.log(newf.get('img'));
         
         $.ajax({
             type:   formAddMarker.attr('method'),
