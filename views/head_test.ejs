@@ -7,7 +7,7 @@
 </style>
 <script type="text/javascript">
     var map;
-    //var locInfoBundleList = [];
+    var infoWindowList = [];
     
     function attachInfoWindow(marker, locationInfo) {
         var photoHtml = '<div>';
@@ -18,14 +18,19 @@
         /*
         因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
         */
+        var hiddenForm = "<form id='hiddenForm' action='/newPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+            <input type='hidden' name='id' value='" + locationInfo._id + "'>\
+            <input type='file' name='img' accept='image/*' multiple><br>\
+            <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
 
         var infowindow = new google.maps.InfoWindow({
             content:    "Contributors: <b>" + locationInfo.name + "</b><br>\
                         <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
-                        + photoHtml + "</div><div><button onclick='deleteMarker()'>Do Sth</button></div>"
+                        + photoHtml + "</div><br>" + hiddenForm
         });
         marker.addListener('click',function(){
             infowindow.open(marker.get('map'), marker);
+            infoWindowList.push(infowindow);
         });
         marker.addListener('dblclick',function(){
             infowindow.close();
@@ -33,6 +38,11 @@
     }
 
    	function loadMarkers() {
+        for(var i in infoWindowList) {
+            infoWindowList[i].close();
+        }
+        infoWindowList.length = 0;
+
   		var xhttp = new XMLHttpRequest();
   		xhttp.onreadystatechange = function() {
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
@@ -45,9 +55,6 @@
 		        		title: location_list[i].title
 		        	});
                     attachInfoWindow(marker, location_list[i]);
-                    //var locInfoBundle = { local: marker, db: location_list[i]};
-                    //console.log(locInfoBundle);
-                    //locInfoBundleList.push(locInfoBundle);
         		}
     		}
   		};
@@ -74,6 +81,7 @@
             content: infoWindowContent
         });
         infowindow.open(map, marker);
+        infoWindowList.push(infowindow);
         marker.addListener('click',function(){
             infowindow.close();
             marker.setMap(null);
@@ -83,22 +91,10 @@
 
     function addMarker(thisForm) {
         var formAddMarker = $(thisForm);
-        var newf = new FormData();
-        newf.append('lat', formAddMarker.find('input[name="lat"]').val());
-        newf.append('lng', formAddMarker.find('input[name="lng"]').val());
-        newf.append('name', formAddMarker.find('input[name="name"]').val());
-        newf.append('title', formAddMarker.find('input[name="title"]').val());
-        //console.log(formAddMarker.find('input[type="file"]')[0].files);
-        for (var i = 0; i < formAddMarker.find('input[type="file"]')[0].files.length; i++) {
-            newf.append('img', formAddMarker.find('input[type="file"]')[0].files[i]);
-            console.log(formAddMarker.find('input[type="file"]')[0].files[i]);
-        }
-        
-        /*  一開始遇到的問題轉FormData，但是thisForm不是一個standard javascript object
-            導致FormData內容錯誤讓伺服器端讀不到值。
-            改用append之後，卻沒發現img的value是formAddMarker.find('input[name="img"]').val()，
-            只是一個單純的路徑，導致伺服器無法解析成檔案。
-            後來改成formAddMarker.find('input[type="file"]')[0].files[0])，這才是一個file的object
+        var newf = new FormData(thisForm);
+        /*
+            結果是自己搞錯:FormData()是吃HTML element，當初沒發現FormData(thisForm)就可以用
+            也有可能是當時伺服器端的multer沒弄好導致以為FormData(thisForm)不能用
         */
         
         $.ajax({
@@ -109,8 +105,8 @@
             processData: false,
             data:   newf,
             success: function (res) {
-                formAddMarker.find('#button').val('Success!');
-                loadMarkers();
+                formAddMarker.find('#button').val(res);
+                setTimeout(loadMarkers,1000);
             }
         });
     }

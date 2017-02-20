@@ -9,7 +9,7 @@ var upload = multer({
 	limits: {	fileSize:	5242880},
 	fileFilter: function(req, file, cb) {
 		var type = file.mimetype;
-		console.log(type);
+		//console.log(type);
 		var typeArray = type.split("/");
 		if (typeArray[0] == "image") {
 			cb(null, true);
@@ -64,7 +64,24 @@ router.post('/newLocation', upload.array('img', 3) , function(req,res) {
 	newMarker.title = req.body.title;
 	newMarker.photoIDs = _photoIDs;
 	newMarker.save();
-	res.send("complete");
+	res.send("Success");
+});
+
+router.post('/newPhoto', upload.array('img', 3) , function(req,res) {
+	var marker = markers.findById( req.body.id ,function(err, doc){
+		//console.log(doc);
+		if(req.files.length == 0) {
+			res.send("No Files");
+			return;
+		}
+		var _photoIDs = doc.photoIDs;
+		for (i in req.files) {
+			_photoIDs.push(req.files[i].filename);
+		}
+		doc.save();
+		res.send("Success");
+	});
+	
 });
 
 module.exports = router;
