@@ -49,9 +49,16 @@
      			var location_list = JSON.parse(xhttp.responseText);
      			for(i in location_list){
 		        	//console.log(location_list[i]);
+                    if(location_list[i].dir == undefined) location_list[i].dir = "east";
+                    var markerIcon = {
+                        url: "/images/" + location_list[i].dir + ".png",
+                        size: new  google.maps.Size(55,55),
+                        origin: new google.maps.Point(0,-12)
+                    }
 		        	var marker = new google.maps.Marker({
 		        		position: new google.maps.LatLng(location_list[i].lat, location_list[i].lng),
 		        		map: map,
+                        icon: markerIcon,
 		        		title: location_list[i].title
 		        	});
                     attachInfoWindow(marker, location_list[i]);
@@ -63,9 +70,16 @@
 	}
     
     function clickMap(location) {
+        var markerIcon = {
+            url: "/images/north.png",
+            size: new google.maps.Size(55,55),
+            origin: new google.maps.Point(0,-12)
+            //anchor: new google.maps.Point(0,55)
+        }
         var marker = new google.maps.Marker({
             position: location,
             map: map,
+            icon: markerIcon,
             title: "stage1"
         });
         
@@ -74,6 +88,7 @@
             <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
             <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
             <b>Name</b>: <input type='text' id='name' name='name'><br>\
+            <input type='hidden' name='dir' value='south'>\
             <input type='file' name='img' accept='image/*' multiple><br>\
             <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
     

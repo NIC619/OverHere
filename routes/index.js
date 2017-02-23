@@ -3,7 +3,6 @@ var markers = mongoose.model('marker_geo');
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
-var path = require('path');
 var upload = multer({
 	dest: 	'./public/gallery',
 	limits: {	fileSize:	5242880},
@@ -38,7 +37,7 @@ router.get('/ajax', function(req,res) {
 	});
 	
 });
-
+/*
 router.get('/newLocation', function(req,res) {
 	var newMarker = new markers();
 	//console.log('name: ' + req.query.name);
@@ -49,7 +48,7 @@ router.get('/newLocation', function(req,res) {
 	newMarker.save();
 	res.send("complete");
 });
-
+*/
 router.post('/newLocation', upload.array('img', 3) , function(req,res) {
 	var newMarker = new markers();
 	//console.log(req.files);
@@ -62,6 +61,7 @@ router.post('/newLocation', upload.array('img', 3) , function(req,res) {
 	newMarker.lng = req.body.lng;
 	newMarker.name = req.body.name;
 	newMarker.title = req.body.title;
+	newMarker.dir = req.body.dir;
 	newMarker.photoIDs = _photoIDs;
 	newMarker.save();
 	res.send("Success");

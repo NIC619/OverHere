@@ -6,6 +6,7 @@ var marker_geo = new Schema({
 	lng: Number,
 	name: String,
 	title: String,
+	dir: String,
 	photoIDs: [String]
 });
 
