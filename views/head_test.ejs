@@ -8,6 +8,7 @@
 <script type="text/javascript">
     var map;
     var infoWindowList = [];
+    var openedLocationList = [];
     
     function attachInfoWindow(marker, locationInfo) {
         var photoHtml = '<div>';
@@ -30,7 +31,6 @@
         });
         marker.addListener('click',function(){
             infowindow.open(marker.get('map'), marker);
-            infoWindowList.push(infowindow);
         });
         marker.addListener('dblclick',function(){
             infowindow.close();
@@ -38,10 +38,11 @@
     }
 
    	function loadMarkers() {
-        for(var i in infoWindowList) {
-            infoWindowList[i].close();
+        
+        for(var i in openedLocationList) {
+            google.maps.event.trigger(openedLocationList[i]._marker, 'click');
         }
-        infoWindowList.length = 0;
+        openedLocationList.length = 0;
 
   		var xhttp = new XMLHttpRequest();
   		xhttp.onreadystatechange = function() {
@@ -49,7 +50,7 @@
      			var location_list = JSON.parse(xhttp.responseText);
      			for(i in location_list){
 		        	//console.log(location_list[i]);
-                    if(location_list[i].dir == undefined) location_list[i].dir = "east";
+                    if(location_list[i].dir == undefined) location_list[i].dir = "north";
                     var markerIcon = {
                         url: "/images/" + location_list[i].dir + ".png",
                         size: new  google.maps.Size(55,55),
@@ -58,6 +59,7 @@
 		        	var marker = new google.maps.Marker({
 		        		position: new google.maps.LatLng(location_list[i].lat, location_list[i].lng),
 		        		map: map,
+                        draggable: true,
                         icon: markerIcon,
 		        		title: location_list[i].title
 		        	});
@@ -79,6 +81,7 @@
         var marker = new google.maps.Marker({
             position: location,
             map: map,
+            draggable: true,
             icon: markerIcon,
             title: "stage1"
         });
@@ -88,7 +91,11 @@
             <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
             <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
             <b>Name</b>: <input type='text' id='name' name='name'><br>\
-            <input type='hidden' name='dir' value='south'>\
+            In which direction should I look?<br>\
+            <input type='radio' name='dir' value='north' checked><img src='/images/north.png' height='60' width='60' alt='North'/>\
+            <input type='radio' name='dir' value='east'><img src='/images/east.png' height='60' width='60' alt='East'/>\
+            <input type='radio' name='dir' value='west'><img src='/images/west.png' height='60' width='60' alt='West'/>\
+            <input type='radio' name='dir' value='south'><img src='/images/south.png' height='60' width='60' alt='South'/><br>\
             <input type='file' name='img' accept='image/*' multiple><br>\
             <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
     
@@ -96,7 +103,9 @@
             content: infoWindowContent
         });
         infowindow.open(map, marker);
-        infoWindowList.push(infowindow);
+        //infoWindowList.push(infowindow);
+        var tmpObj = { _marker : marker, _infoWindow : infowindow};
+        openedLocationList.push(tmpObj);
         marker.addListener('click',function(){
             infowindow.close();
             marker.setMap(null);
