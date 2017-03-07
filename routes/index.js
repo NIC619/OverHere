@@ -49,7 +49,7 @@ router.get('/newLocation', function(req,res) {
 	res.send("complete");
 });
 */
-router.post('/newLocation', upload.array('img', 3) , function(req,res) {
+router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
 	//console.log(req.files);
 	//console.log(req.body.name);
@@ -67,8 +67,8 @@ router.post('/newLocation', upload.array('img', 3) , function(req,res) {
 	res.send("Success");
 });
 
-router.post('/newPhoto', upload.array('img', 3) , function(req,res) {
-	var marker = markers.findById( req.body.id ,function(err, doc){
+router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
+	markers.findById( req.body.id ,function(err, doc){
 		//console.log(doc);
 		if(req.files.length == 0) {
 			res.send("No Files");
@@ -82,6 +82,26 @@ router.post('/newPhoto', upload.array('img', 3) , function(req,res) {
 		res.send("Success");
 	});
 	
+});
+
+router.get('/surrounding', function(req, res){
+	var surroundingList = [];
+	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
+	//console.log("" + (req.query.lng -1.5) + "," + (req.query.lng+1.5));
+	markers.find(
+			{ 
+				lat : { 
+					$gt : (req.query.lat - req.query.range),
+					$lt : (req.query.lat + req.query.range)
+				}, 
+				lng : { 
+					$gt : (req.query.lng - req.query.range),
+					$lt : (req.query.lng + req.query.range)
+				} 
+			}, function(err, list){
+				console.log(list);
+				res.send(list);
+	});
 });
 
 module.exports = router;

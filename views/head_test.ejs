@@ -97,7 +97,8 @@
             <input type='radio' name='dir' value='west'><img src='/images/west.png' height='60' width='60' alt='West'/>\
             <input type='radio' name='dir' value='south'><img src='/images/south.png' height='60' width='60' alt='South'/><br>\
             <input type='file' name='img' accept='image/*' multiple><br>\
-            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
+            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>\
+            <button onclick='showSurrounding(" + marker.getPosition().lat() + "," + marker.getPosition().lng() + ")'>";
     
         var infowindow = new google.maps.InfoWindow({
             content: infoWindowContent
@@ -131,6 +132,22 @@
             success: function (res) {
                 formAddMarker.find('#button').val(res);
                 setTimeout(loadMarkers,1000);
+            }
+        });
+    }
+
+    function showSurrounding(_lat, _lng){
+        console.log(_lat);
+        $.ajax({
+            type: "GET",
+            url: "/surrounding",
+            data: {
+                lat: _lat,
+                lng: _lng,
+                range: 30
+            },
+            success: function(res) {
+                console.log(res);
             }
         });
     }
