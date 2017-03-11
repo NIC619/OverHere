@@ -24,7 +24,28 @@ router.get('/', function(req, res) {
 	res.render('layout_body_test', {title: 'OverHere'});
 });
 
-router.get('/ajax', function(req,res) {
+router.get('/surroundingLocations', function(req, res){
+	var surroundingList = [];
+	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
+	//console.log("" + (req.query.lng -1.5) + "," + (req.query.lng+1.5));
+	
+	markers.find(
+			{ 
+				lat : { 
+					$gt : (req.query.lat - req.query.latDis/2),
+					$lt : (+req.query.lat + req.query.latDis/2)
+				}, 
+				lng : { 
+					$gt : (req.query.lng - req.query.lngDis/2),
+					$lt : (+req.query.lng + req.query.lngDis/2)
+				} 
+			}, function(err, list){
+				//console.log(list);
+				res.send(list);
+	});
+});
+
+router.get('/allLocations', function(req,res) {
 	var location_list = [];
 	markers.find(function(err,marker_list){
 		//console.log(marker_list);
@@ -84,24 +105,6 @@ router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
 	
 });
 
-router.get('/surrounding', function(req, res){
-	var surroundingList = [];
-	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
-	//console.log("" + (req.query.lng -1.5) + "," + (req.query.lng+1.5));
-	markers.find(
-			{ 
-				lat : { 
-					$gt : (req.query.lat - req.query.range),
-					$lt : (req.query.lat + req.query.range)
-				}, 
-				lng : { 
-					$gt : (req.query.lng - req.query.range),
-					$lt : (req.query.lng + req.query.range)
-				} 
-			}, function(err, list){
-				console.log(list);
-				res.send(list);
-	});
-});
+
 
 module.exports = router;

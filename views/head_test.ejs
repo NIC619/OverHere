@@ -7,8 +7,8 @@
 </style>
 <script type="text/javascript">
     var map;
-    var infoWindowList = [];
-    var openedLocationList = [];
+    var loadedMarkerList = [];
+    var openedMarkerList = [];
     
     function attachInfoWindow(marker, locationInfo) {
         var photoHtml = '<div>';
@@ -30,52 +30,93 @@
                         + photoHtml + "</div><br>" + hiddenForm
         });
         marker.addListener('click',function(){
-            infowindow.open(marker.get('map'), marker);
-        });
-        marker.addListener('dblclick',function(){
-            infowindow.close();
+            if(infowindow.opened) {
+                infowindow.close();
+                infowindow.opened = false;
+            }
+            else {
+                infowindow.open(marker.get('map'), marker);
+                infowindow.opened = true;
+            }
         });
     }
 
    	function loadMarkers() {
-        
-        for(var i in openedLocationList) {
-            google.maps.event.trigger(openedLocationList[i]._marker, 'click');
-        }
-        openedLocationList.length = 0;
-
+        /*
   		var xhttp = new XMLHttpRequest();
   		xhttp.onreadystatechange = function() {
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
-     			var location_list = JSON.parse(xhttp.responseText);
-     			for(i in location_list){
-		        	//console.log(location_list[i]);
-                    if(location_list[i].dir == undefined) location_list[i].dir = "north";
+     			var listLocation = JSON.parse(xhttp.responseText);
+     			for(i in listLocation){
+		        	//console.log(listLocation[i]);
+                    if(listLocation[i].dir == undefined) listLocation[i].dir = "north";
                     var markerIcon = {
-                        url: "/images/" + location_list[i].dir + ".png",
+                        url: "/images/" + listLocation[i].dir + ".png",
                         size: new  google.maps.Size(55,55),
                         origin: new google.maps.Point(0,-12)
                     }
 		        	var marker = new google.maps.Marker({
-		        		position: new google.maps.LatLng(location_list[i].lat, location_list[i].lng),
+		        		position: new google.maps.LatLng(listLocation[i].lat, listLocation[i].lng),
 		        		map: map,
                         draggable: true,
                         icon: markerIcon,
-		        		title: location_list[i].title
+		        		title: listLocation[i].title
 		        	});
-                    attachInfoWindow(marker, location_list[i]);
+                    attachInfoWindow(marker, listLocation[i]);
         		}
     		}
   		};
   		xhttp.open("GET", "http://localhost:14741/ajax", true);
   		xhttp.send();
+        */
+        //console.log(map.getBounds());
+        var currentBounds = map.getBounds().toJSON();
+        $.ajax({
+            type: "GET",
+            url: "/surroundingLocations",
+            data: {
+                lat: map.getCenter().lat(),
+                lng: map.getCenter().lng(),
+                latDis: Math.abs(currentBounds["north"] - currentBounds["south"])*(7/8),
+                lngDis: Math.abs(currentBounds["west"] - currentBounds["east"])*(3/4)
+            },
+            success: function(listLocation) {
+                for(var i=0 ; i < listLocation.length ; i++) {
+                    //console.log("locations around: " + listLocation[i].title);
+                    if(listLocation[i].dir == undefined) listLocation[i].dir = "north";
+                    var markerIcon = {
+                        url: "/images/" + listLocation[i].dir + ".png",
+                        size: new  google.maps.Size(36,36),
+                        origin: new google.maps.Point(0,0)
+                    }
+		        	var marker = new google.maps.Marker({
+		        		position: new google.maps.LatLng(listLocation[i].lat, listLocation[i].lng),
+		        		map: map,
+                        draggable: false,
+                        icon: markerIcon,
+		        		title: listLocation[i].title
+		        	});
+                    attachInfoWindow(marker, listLocation[i]);
+                    loadedMarkerList.push(marker);
+                }
+                
+            }
+        });
+        for(var i in openedMarkerList) {
+            google.maps.event.trigger(openedMarkerList[i], 'click');
+        }
+        openedMarkerList.length = 0;
+        for(var i in loadedMarkerList) {
+            loadedMarkerList[i].setMap(null);
+        }
+        loadedMarkerList.length = 0;
 	}
     
     function clickMap(location) {
         var markerIcon = {
             url: "/images/north.png",
-            size: new google.maps.Size(55,55),
-            origin: new google.maps.Point(0,-12)
+            size: new google.maps.Size(36,36),
+            origin: new google.maps.Point(0,-0)
             //anchor: new google.maps.Point(0,55)
         }
         var marker = new google.maps.Marker({
@@ -97,16 +138,16 @@
             <input type='radio' name='dir' value='west'><img src='/images/west.png' height='60' width='60' alt='West'/>\
             <input type='radio' name='dir' value='south'><img src='/images/south.png' height='60' width='60' alt='South'/><br>\
             <input type='file' name='img' accept='image/*' multiple><br>\
-            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>\
-            <button onclick='showSurrounding(" + marker.getPosition().lat() + "," + marker.getPosition().lng() + ")'>";
+            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
     
         var infowindow = new google.maps.InfoWindow({
             content: infoWindowContent
         });
         infowindow.open(map, marker);
+        infowindow.opened = true;
         //infoWindowList.push(infowindow);
-        var tmpObj = { _marker : marker, _infoWindow : infowindow};
-        openedLocationList.push(tmpObj);
+        //var tmpObj = { _marker : marker, _infoWindow : infowindow};
+        openedMarkerList.push(marker);
         marker.addListener('click',function(){
             infowindow.close();
             marker.setMap(null);
@@ -136,23 +177,9 @@
         });
     }
 
-    function showSurrounding(_lat, _lng){
-        console.log(_lat);
-        $.ajax({
-            type: "GET",
-            url: "/surrounding",
-            data: {
-                lat: _lat,
-                lng: _lng,
-                range: 30
-            },
-            success: function(res) {
-                console.log(res);
-            }
-        });
-    }
-
     function initialize() {
+        // add property to infowindow prototype to quick check if window is opening
+        google.maps.InfoWindow.prototype.opened = false;
         // Create a map object, and include the MapTypeId to add
         // to the map type control.
         var mapOptions = {
@@ -182,14 +209,28 @@
       		console.log('Browser doesn\'t support Geolocation');
       		//handleLocationError(false, infoWindow, map.getCenter());
    		  }
-
-		loadMarkers();
+        
+        google.maps.event.addListenerOnce(map, 'idle', function(){
+            loadMarkers();
+        });
+		
         // This event listener will call clickMap() when the map is clicked.
         map.addListener('click', function(event) {
             //console.log(event);
             clickMap(event.latLng);
         });
-
+        // Zoom change listener
+        // map.addListener('zoom_changed', function(){
+        //     console.log("current zoom: " + map.getZoom());
+        // });
+        // Bound change listener
+        map.addListener('bounds_changed', function(){
+            loadMarkers();
+            // var currentBounds = map.getBounds().toJSON();
+            // console.log(currentBounds.east);
+            // console.log("current lat distance: " + Math.abs(currentBounds["east"] - currentBounds["west"]) );
+            // console.log("current lng distance: " + Math.abs(currentBounds["north"] - currentBounds["south"]) );
+        });
     }
 
       
