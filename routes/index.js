@@ -74,6 +74,12 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
 	//console.log(req.files);
 	//console.log(req.body.name);
+	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
+		if(doc===undefined) {
+			res.send("Location already registered")
+			return;
+		}
+	});
 	var _photoIDs = [];
 	for (i in req.files) {
 		_photoIDs.push(req.files[i].filename);
