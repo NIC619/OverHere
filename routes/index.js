@@ -74,6 +74,10 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
 	//console.log(req.files);
 	//console.log(req.body.name);
+	if(req.body.lat == undefined || req.body.lng == undefined) {
+		res.send("Please specify a location");
+		return;
+	}
 	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
 		if(doc===undefined) {
 			res.send("Location already registered")
@@ -95,6 +99,10 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 });
 
 router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
+	if(req.body.id == undefined) {
+		res.send("Please specify a registered location for uploading");
+		return;
+	}
 	markers.findById( req.body.id ,function(err, doc){
 		//console.log(doc);
 		if(req.files.length == 0) {

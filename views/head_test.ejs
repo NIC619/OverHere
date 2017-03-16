@@ -9,12 +9,13 @@
     var map;
     var loadedMarkerList = [];
     var openedMarkerList = [];
+    var lastMarkerLoadedTime = (new Date()).getTime();
     
     function attachInfoWindow(marker, locationInfo) {
-        var photoHtml = '<div>';
+        var photoHtml = '<div style="height:120px;overflow:auto;">';
         for (var i in locationInfo.photoIDs){
             photoHtml += "<img src='/gallery/" + locationInfo.photoIDs[i] + "' \
-            height='150' width='150' alt='Fail loading image...'>";
+            height='100px' width='100px' alt='Fail loading image...'>";
         }
         /*
         因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
@@ -25,9 +26,10 @@
             <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
 
         var infowindow = new google.maps.InfoWindow({
-            content:    "Contributors: <b>" + locationInfo.name + "</b><br>\
+            content:    "<div id='divDisplay'>Contributors: <b>" + locationInfo.name + "</b><br>\
                         <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
-                        + photoHtml + "</div><br>" + hiddenForm
+                        + photoHtml + "</div><br>" + hiddenForm + "</div>",
+            maxWidth:   400
         });
         marker.addListener('click',function(){
             if(infowindow.opened) {
@@ -41,35 +43,28 @@
         });
     }
 
+    function cleanOutOfBoundMarkers() {
+        var currentBounds = map.getBounds().toJSON();
+        var tmpList = [];
+        // console.log("openedMarkerList: " + openedMarkerList);
+        // console.log("before clean: " + loadedMarkerList)
+        for(var i = 0 ; i < loadedMarkerList.length ; i++) {
+            if( map.getBounds().contains(loadedMarkerList[i].getPosition()) )
+                tmpList.push(loadedMarkerList[i]);
+            else loadedMarkerList[i].setMap(null);
+        }
+        loadedMarkerList = tmpList;
+        // console.log("after clean: " + loadedMarkerList);
+        // for(var i in openedMarkerList) {
+        //     google.maps.event.trigger(openedMarkerList[i], 'click');
+        // }
+        // openedMarkerList.length = 0;
+        // console.log("openedMarkerList: " + openedMarkerList);
+    }
+
    	function loadMarkers() {
-        /*
-  		var xhttp = new XMLHttpRequest();
-  		xhttp.onreadystatechange = function() {
-    		if (xhttp.readyState == 4 && xhttp.status == 200) {
-     			var listLocation = JSON.parse(xhttp.responseText);
-     			for(i in listLocation){
-		        	//console.log(listLocation[i]);
-                    if(listLocation[i].dir == undefined) listLocation[i].dir = "north";
-                    var markerIcon = {
-                        url: "/images/" + listLocation[i].dir + ".png",
-                        size: new  google.maps.Size(55,55),
-                        origin: new google.maps.Point(0,-12)
-                    }
-		        	var marker = new google.maps.Marker({
-		        		position: new google.maps.LatLng(listLocation[i].lat, listLocation[i].lng),
-		        		map: map,
-                        draggable: true,
-                        icon: markerIcon,
-		        		title: listLocation[i].title
-		        	});
-                    attachInfoWindow(marker, listLocation[i]);
-        		}
-    		}
-  		};
-  		xhttp.open("GET", "http://localhost:14741/ajax", true);
-  		xhttp.send();
-        */
-        //console.log(map.getBounds());
+        lastMarkerLoadedTime = (new Date()).getTime();
+        console.log("load markers in time " + lastMarkerLoadedTime);
         var currentBounds = map.getBounds().toJSON();
         $.ajax({
             type: "GET",
@@ -81,8 +76,19 @@
                 lngDis: Math.abs(currentBounds["west"] - currentBounds["east"])*(3/4)
             },
             success: function(listLocation) {
+                var foundMatch = false;
                 for(var i=0 ; i < listLocation.length ; i++) {
                     //console.log("locations around: " + listLocation[i].title);
+                    foundMatch = false;
+                    for(var j=0 ; j < loadedMarkerList.length ; j++) {
+                        if(loadedMarkerList[j].getPosition().lat() == listLocation[i].lat &&
+                           loadedMarkerList[j].getPosition().lng() == listLocation[i].lng ) {
+                               foundMatch = true;
+                               break;
+                           }
+                    }
+                    if(foundMatch) continue;
+
                     if(listLocation[i].dir == undefined) listLocation[i].dir = "north";
                     var markerIcon = {
                         url: "/images/" + listLocation[i].dir + ".png",
@@ -99,17 +105,17 @@
                     attachInfoWindow(marker, listLocation[i]);
                     loadedMarkerList.push(marker);
                 }
-                
+                setTimeout(cleanOutOfBoundMarkers, 3000);
             }
         });
-        for(var i in openedMarkerList) {
-            google.maps.event.trigger(openedMarkerList[i], 'click');
-        }
-        openedMarkerList.length = 0;
-        for(var i in loadedMarkerList) {
-            loadedMarkerList[i].setMap(null);
-        }
-        loadedMarkerList.length = 0;
+        // for(var i in openedMarkerList) {
+        //     google.maps.event.trigger(openedMarkerList[i], 'click');
+        // }
+        // openedMarkerList.length = 0;
+        // for(var i in loadedMarkerList) {
+        //     loadedMarkerList[i].setMap(null);
+        // }
+        // loadedMarkerList.length = 0;
 	}
     
     function clickMap(location) {
@@ -127,7 +133,7 @@
             title: "stage1"
         });
         
-        var infoWindowContent = "<form id='formAddMarker' action='/newLocation' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+        var infoWindowContent = "<div id='divForm'><form id='formAddMarker' action='/newLocation' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
             <b>Title</b>: <input type='text' name='title' size='10'><br>\
             <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
             <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
@@ -138,10 +144,11 @@
             <input type='radio' name='dir' value='west'><img src='/images/west.png' height='60' width='60' alt='West'/>\
             <input type='radio' name='dir' value='south'><img src='/images/south.png' height='60' width='60' alt='South'/><br>\
             <input type='file' name='img' accept='image/*' multiple><br>\
-            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form>";
+            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form></div>";
     
         var infowindow = new google.maps.InfoWindow({
-            content: infoWindowContent
+            content: infoWindowContent,
+            maxWidth:   400
         });
         infowindow.open(map, marker);
         infowindow.opened = true;
@@ -151,9 +158,15 @@
         marker.addListener('click',function(){
             infowindow.close();
             marker.setMap(null);
+            var index = openedMarkerList.indexOf(marker);
+            if( index > -1) {
+                openedMarkerList.splice(index, 1);
+            }
         });
         
     }
+    
+    // setInterval(cleanOutOfBoundMarkers, 5000);
 
     function addMarker(thisForm) {
         var formAddMarker = $(thisForm);
@@ -173,6 +186,10 @@
             success: function (res) {
                 formAddMarker.find('#button').val(res);
                 setTimeout(loadMarkers,1000);
+                for(var i in openedMarkerList) {
+                    google.maps.event.trigger(openedMarkerList[i], 'click');
+                }
+                openedMarkerList.length = 0;
             }
         });
     }
@@ -193,14 +210,14 @@
         
         // Try HTML5 geolocation.
     		if (navigator.geolocation) {
-      		navigator.geolocation.getCurrentPosition(function(position) {
-      			//console.log(position);
-  	      		var pos = {
-  			        lat: position.coords.latitude,
-  			        lng: position.coords.longitude
-  	     		};
-  		      	map.setCenter(pos);
-  		    });
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    //console.log(position);
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(pos);
+                });
       		//}, function() {
         	//	handleLocationError(true, infoWindow, map.getCenter());
       		//});
@@ -225,7 +242,10 @@
         // });
         // Bound change listener
         map.addListener('bounds_changed', function(){
-            loadMarkers();
+            var t = (new Date()).getTime();
+            if( t - lastMarkerLoadedTime > 1000) {
+                loadMarkers();
+            }
             // var currentBounds = map.getBounds().toJSON();
             // console.log(currentBounds.east);
             // console.log("current lat distance: " + Math.abs(currentBounds["east"] - currentBounds["west"]) );
