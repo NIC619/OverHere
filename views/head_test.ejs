@@ -3,8 +3,8 @@
 <link rel='stylesheet' href='/stylesheets/bootstrap.css' />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <style  type="text/css">
-        html, body, #map-canvas { position: relative; height: 100%; margin: 0; padding: 0;}
-        
+        html, body { position: relative; height: 100%; margin: 0; padding: 0;}
+        #map-canvas { position: : relative; height:95%; top: 5%; margin: 0; padding: 0;}
         /* The actual popup */
         .pop-up-text {
             /*visibility: visible;*/
@@ -31,6 +31,40 @@
             border-style: solid;
             border-color:  transparent transparent  transparent #555;
         }
+        /* nav bar */
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border-bottom: 1px solid #a9a9a9;
+            background-color: #f3f3f3;
+            position: fixed;
+            top: 0;
+            z-index: 1;
+            /*height: 5%;*/
+            width: 100%;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: #666;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: #ddd;
+        }
+
+        .active {
+            background-color: #4CAF50;
+        }
 </style>
 <script type="text/javascript">
     var map;
@@ -39,11 +73,16 @@
     var lastMarkerLoadedTime = (new Date()).getTime();
     
     function attachInfoWindow(marker, locationInfo) {
-        var photoHtml = '<div style="height:120px;overflow:auto;">';
-        for (var i in locationInfo.photoIDs){
-            photoHtml += "<img src='/gallery/" + locationInfo.photoIDs[i] + "' \
-            height='100px' width='100px' alt='Fail loading image...'>";
+        var photoHtml;
+        if(locationInfo.photoIDs.length > 0 ) {
+            photoHtml = '<div style="height:120px;overflow:auto;">';
+            for (var i in locationInfo.photoIDs){
+                photoHtml += "<img src='/gallery/" + locationInfo.photoIDs[i] + "' \
+                height='100px' width='100px' alt='Fail loading image...'>";
+            }
         }
+        else photoHtml = '<div style="height:10px;overflow:auto;">';
+        
         /*
         因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
         */
