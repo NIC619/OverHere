@@ -70,6 +70,18 @@ router.get('/newLocation', function(req,res) {
 	res.send("complete");
 });
 */
+router.get('/searchByTitle', function(req, res) {
+	// console.log(req.query.title);
+	markers.find({ title: req.query.title}, function(err, doc){
+		if(doc===undefined) {
+			res.send([]);
+		}
+		else {
+			res.send(doc);
+		}
+	});
+});
+
 router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
 	//console.log(req.files);

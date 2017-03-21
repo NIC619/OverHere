@@ -72,6 +72,21 @@
     var openedMarkerList = [];
     var lastMarkerLoadedTime = (new Date()).getTime();
     
+    function searchByTitle(_title) {
+        // console.log(_title);
+        
+        $.ajax({
+            type: "GET",
+            url: "/searchByTitle",
+            data: {title: _title},
+            success: function(listLocation) {
+                for(var i = 0 ; i < listLocation.length ; i++) {
+                    console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
+                }
+            }
+        });
+    }
+
     function attachInfoWindow(marker, locationInfo) {
         var photoHtml;
         if(locationInfo.photoIDs.length > 0 ) {
@@ -94,7 +109,8 @@
             <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
 
         var infowindow = new google.maps.InfoWindow({
-            content:    "<div id='divDisplay'>Contributors: <b>" + locationInfo.name + "</b><br>\
+            content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + locationInfo.title + "&quot;);'>#" + locationInfo.title + "</a><br>\
+                        Contributors: <b>" + locationInfo.name + "</b><br>\
                         <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
                         + photoHtml + "</div><br>" + hiddenForm + "</div>",
             maxWidth:   400
