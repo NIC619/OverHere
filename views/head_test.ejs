@@ -68,21 +68,60 @@
 </style>
 <script type="text/javascript">
     var map;
+    var ifDisplayLoadedMarker = true;
     var loadedMarkerList = [];
     var openedMarkerList = [];
+    var searchResultList = [];
     var lastMarkerLoadedTime = (new Date()).getTime();
     
+    function appendAndDisplayMarker(displayMarkerList, listToAppendTo, ifDisplay) {
+        // console.log(displayMarkerList);
+        for(var i=0 ; i < displayMarkerList.length ; i++) {
+
+            if(displayMarkerList[i].dir == undefined) displayMarkerList[i].dir = "north";
+            var markerIcon = {
+                url: "/images/" + displayMarkerList[i].dir + ".png",
+                size: new  google.maps.Size(36,36),
+                origin: new google.maps.Point(0,0)
+            }
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(displayMarkerList[i].lat, displayMarkerList[i].lng),
+                draggable: false,
+                icon: markerIcon,
+                title: displayMarkerList[i].title
+            });
+            if(ifDisplay) marker.setMap(map);
+            attachInfoWindow(marker, displayMarkerList[i]);
+            listToAppendTo.push(marker);
+        }
+    }
+
+    function displayMarker(displayMarkerList) {
+        for(var i=0 ; i < undisplayMarker.length; i++) {
+            displayMarkerList[i].setMap(map);
+        }
+    }
+    function undisplayMarker(undisplayMarkerList) {
+        for(var i=0 ; i < undisplayMarkerList.length; i++) {
+            undisplayMarkerList[i].setMap(null);
+        }
+    }
+
     function searchByTitle(_title) {
         // console.log(_title);
-        
+        searchResultList = [];
         $.ajax({
             type: "GET",
             url: "/searchByTitle",
             data: {title: _title},
             success: function(listLocation) {
-                for(var i = 0 ; i < listLocation.length ; i++) {
-                    console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
-                }
+                ifDisplayLoadedMarker = false;
+                map.setZoom(2);
+                undisplayMarker(loadedMarkerList);
+                appendAndDisplayMarker(listLocation, searchResultList, true);
+                // for(var i = 0 ; i < listLocation.length ; i++) {
+                //     // console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
+                // }
             }
         });
     }
@@ -130,20 +169,12 @@
     function cleanOutOfBoundMarkers() {
         var currentBounds = map.getBounds().toJSON();
         var tmpList = [];
-        // console.log("openedMarkerList: " + openedMarkerList);
-        // console.log("before clean: " + loadedMarkerList)
         for(var i = 0 ; i < loadedMarkerList.length ; i++) {
             if( map.getBounds().contains(loadedMarkerList[i].getPosition()) )
                 tmpList.push(loadedMarkerList[i]);
             else loadedMarkerList[i].setMap(null);
         }
         loadedMarkerList = tmpList;
-        // console.log("after clean: " + loadedMarkerList);
-        // for(var i in openedMarkerList) {
-        //     google.maps.event.trigger(openedMarkerList[i], 'click');
-        // }
-        // openedMarkerList.length = 0;
-        // console.log("openedMarkerList: " + openedMarkerList);
     }
 
    	function loadMarkers() {
@@ -160,7 +191,9 @@
                 lngDis: Math.abs(currentBounds["west"] - currentBounds["east"])*(3/4)
             },
             success: function(listLocation) {
+                // console.log(listLocation);
                 var foundMatch = false;
+                var tmpList = [];
                 for(var i=0 ; i < listLocation.length ; i++) {
                     //console.log("locations around: " + listLocation[i].title);
                     foundMatch = false;
@@ -172,34 +205,14 @@
                            }
                     }
                     if(foundMatch) continue;
-
-                    if(listLocation[i].dir == undefined) listLocation[i].dir = "north";
-                    var markerIcon = {
-                        url: "/images/" + listLocation[i].dir + ".png",
-                        size: new  google.maps.Size(36,36),
-                        origin: new google.maps.Point(0,0)
+                    else {
+                        tmpList.push(listLocation[i]);
                     }
-		        	var marker = new google.maps.Marker({
-		        		position: new google.maps.LatLng(listLocation[i].lat, listLocation[i].lng),
-		        		map: map,
-                        draggable: false,
-                        icon: markerIcon,
-		        		title: listLocation[i].title
-		        	});
-                    attachInfoWindow(marker, listLocation[i]);
-                    loadedMarkerList.push(marker);
                 }
+                appendAndDisplayMarker(tmpList, loadedMarkerList, ifDisplayLoadedMarker);
                 setTimeout(cleanOutOfBoundMarkers, 3000);
             }
         });
-        // for(var i in openedMarkerList) {
-        //     google.maps.event.trigger(openedMarkerList[i], 'click');
-        // }
-        // openedMarkerList.length = 0;
-        // for(var i in loadedMarkerList) {
-        //     loadedMarkerList[i].setMap(null);
-        // }
-        // loadedMarkerList.length = 0;
 	}
     
     function clickMap(location) {
