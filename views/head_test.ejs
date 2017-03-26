@@ -31,6 +31,32 @@
             border-style: solid;
             border-color:  transparent transparent  transparent #555;
         }
+        /* Popup button */
+        .pop-up-btn {
+            -webkit-border-radius: 12;
+            -moz-border-radius: 12;
+            border-radius: 12px;
+            -webkit-box-shadow: 0px 1px 3px #666666;
+            -moz-box-shadow: 0px 1px 3px #666666;
+            box-shadow: 0px 1px 3px #666666;
+            font-family: Arial;
+            color: #544e54;
+            font-size: 20px;
+            background: #afb2b3;
+            padding: 10px 20px 10px 20px;
+            text-decoration: none;
+            display: none;
+            position: absolute;
+            z-index: 1;
+            left: 1%;
+            top:20%;
+        }
+
+        .pop-up-btn:hover {
+            background: #e0e0e0;
+            text-decoration: none;
+        }
+
         /* nav bar */
         ul {
             list-style-type: none;
@@ -97,7 +123,7 @@
     }
 
     function displayMarker(displayMarkerList) {
-        for(var i=0 ; i < undisplayMarker.length; i++) {
+        for(var i=0 ; i < displayMarkerList.length; i++) {
             displayMarkerList[i].setMap(map);
         }
     }
@@ -119,6 +145,17 @@
                 map.setZoom(2);
                 undisplayMarker(loadedMarkerList);
                 appendAndDisplayMarker(listLocation, searchResultList, true);
+                
+                var popUpButton = $('#popUpButton');
+                popUpButton.text("Undo Search");
+                popUpButton.fadeIn(1500);
+                popUpButton.click(function(){
+                    ifDisplayLoadedMarker = true;
+                    undisplayMarker(searchResultList);
+                    displayMarker(loadedMarkerList);
+                    $(this).fadeOut(2000);
+                    searchResultList = [];
+                });
                 // for(var i = 0 ; i < listLocation.length ; i++) {
                 //     // console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
                 // }
