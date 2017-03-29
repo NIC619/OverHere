@@ -117,7 +117,45 @@
                 title: displayMarkerList[i].title
             });
             if(ifDisplay) marker.setMap(map);
-            attachInfoWindow(marker, displayMarkerList[i]);
+
+            var photoHtml;
+            if(displayMarkerList[i].photoIDs.length > 0 ) {
+                photoHtml = '<div style="height:120px;overflow:auto;">';
+                for (var j in displayMarkerList[i].photoIDs){
+                    photoHtml += "<img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
+                    height='100px' width='100px' alt='Fail loading image...'>";
+                }
+            }
+            else photoHtml = '<div style="height:10px;overflow:auto;">';
+            
+            /*
+            因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
+            */
+            var hiddenForm = "<form id='hiddenForm' action='/newPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+                <input type='hidden' name='id' value='" + displayMarkerList[i]._id + "'>\
+                <input type='hidden' name='lat' value='" + marker.get('position').lat() + "'>\
+                <input type='hidden' name='lng' value='" + marker.get('position').lng() + "'>\
+                <input type='file' name='img' accept='image/*' multiple><br>\
+                <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
+
+            var infowindow = new google.maps.InfoWindow({
+                content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + displayMarkerList[i].title + "&quot;);'>#" + displayMarkerList[i].title + "</a><br>\
+                            Contributors: <b>" + displayMarkerList[i].name + "</b><br>\
+                            <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
+                            + photoHtml + "</div><br>" + hiddenForm + "</div>",
+                maxWidth:   400
+            });
+            var clickFunction = function(_marker, _infowindow){
+                if(_infowindow.opened) {
+                    _infowindow.close();
+                    _infowindow.opened = false;
+                }
+                else {
+                    _infowindow.open(_marker.get('map'), _marker);
+                    _infowindow.opened = true;
+                }
+            };
+            marker.addListener('click', function(){ return clickFunction(marker, infowindow);});
             listToAppendTo.push(marker);
         }
     }
@@ -159,46 +197,6 @@
                 // for(var i = 0 ; i < listLocation.length ; i++) {
                 //     // console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
                 // }
-            }
-        });
-    }
-
-    function attachInfoWindow(marker, locationInfo) {
-        var photoHtml;
-        if(locationInfo.photoIDs.length > 0 ) {
-            photoHtml = '<div style="height:120px;overflow:auto;">';
-            for (var i in locationInfo.photoIDs){
-                photoHtml += "<img src='/gallery/" + locationInfo.photoIDs[i] + "' \
-                height='100px' width='100px' alt='Fail loading image...'>";
-            }
-        }
-        else photoHtml = '<div style="height:10px;overflow:auto;">';
-        
-        /*
-        因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
-        */
-        var hiddenForm = "<form id='hiddenForm' action='/newPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
-            <input type='hidden' name='id' value='" + locationInfo._id + "'>\
-            <input type='hidden' name='lat' value='" + marker.get('position').lat() + "'>\
-            <input type='hidden' name='lng' value='" + marker.get('position').lng() + "'>\
-            <input type='file' name='img' accept='image/*' multiple><br>\
-            <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
-
-        var infowindow = new google.maps.InfoWindow({
-            content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + locationInfo.title + "&quot;);'>#" + locationInfo.title + "</a><br>\
-                        Contributors: <b>" + locationInfo.name + "</b><br>\
-                        <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
-                        + photoHtml + "</div><br>" + hiddenForm + "</div>",
-            maxWidth:   400
-        });
-        marker.addListener('click',function(){
-            if(infowindow.opened) {
-                infowindow.close();
-                infowindow.opened = false;
-            }
-            else {
-                infowindow.open(marker.get('map'), marker);
-                infowindow.opened = true;
             }
         });
     }
@@ -286,18 +284,17 @@
         });
         infowindow.open(map, marker);
         infowindow.opened = true;
-        //infoWindowList.push(infowindow);
-        //var tmpObj = { _marker : marker, _infoWindow : infowindow};
         openedMarkerList.push(marker);
-        marker.addListener('click',function(){
-            infowindow.close();
-            marker.setMap(null);
-            var index = openedMarkerList.indexOf(marker);
+        var clickFunction = function(_marker, _infowindow){
+            _infowindow.close();
+            _infowindow.opened = false;
+            _marker.setMap(null);
+            var index = openedMarkerList.indexOf(_marker);
             if( index > -1) {
                 openedMarkerList.splice(index, 1);
             }
-        });
-        
+        };
+        marker.addListener('click', function(){ return clickFunction(marker, infowindow);});
     }
     
     // setInterval(cleanOutOfBoundMarkers, 5000);
