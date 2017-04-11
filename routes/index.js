@@ -20,9 +20,13 @@ var upload = multer({
 
 /* GET home page. */
 router.get('/', function(req, res) {
-	//markers.find().remove().exec();
 	res.render('layout_body_test', {title: 'OverHere'});
 });
+
+router.get('/delete', function(req, res) {
+	markers.find().remove().exec();
+	res.redirect('http://localhost:14741');
+})
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];
@@ -64,7 +68,7 @@ router.get('/newLocation', function(req,res) {
 	//console.log('name: ' + req.query.name);
 	newMarker.lat = req.query.lat;
 	newMarker.lng = req.query.lng;
-	newMarker.name = req.query.name;
+	newMarker.names = req.query.name;
 	newMarker.title = req.query.title;
 	newMarker.save();
 	res.send("complete");
@@ -100,9 +104,10 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	for (i in req.files) {
 		_photoIDs.push(req.files[i].filename);
 	}
+	
 	newMarker.lat = req.body.lat;
 	newMarker.lng = req.body.lng;
-	newMarker.name = req.body.name;
+	newMarker.names = [req.body.name];
 	newMarker.title = req.body.title;
 	newMarker.dir = req.body.dir;
 	newMarker.photoIDs = _photoIDs;
@@ -124,6 +129,9 @@ router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
 		var _photoIDs = doc.photoIDs;
 		for (i in req.files) {
 			_photoIDs.push(req.files[i].filename);
+		}
+		if(doc.names.indexOf(req.body.name) == -1) {
+			doc.names.push(req.body.name);
 		}
 		doc.save();
 		res.send("Success");

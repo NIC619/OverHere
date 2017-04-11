@@ -102,7 +102,7 @@
     
     function appendAndDisplayMarker(displayMarkerList, listToAppendTo, ifDisplay) {
         // console.log(displayMarkerList);
-        for(var i=0 ; i < displayMarkerList.length ; i++) {
+        for(var i = 0 ; i < displayMarkerList.length ; i++) {
 
             if(displayMarkerList[i].dir == undefined) displayMarkerList[i].dir = "north";
             var markerIcon = {
@@ -135,12 +135,21 @@
                 <input type='hidden' name='id' value='" + displayMarkerList[i]._id + "'>\
                 <input type='hidden' name='lat' value='" + marker.get('position').lat() + "'>\
                 <input type='hidden' name='lng' value='" + marker.get('position').lng() + "'>\
+                Name: <input type='text' name='name'>\
                 <input type='file' name='img' accept='image/*' multiple><br>\
                 <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
-
+            var contributors = '';
+            for(var j = 0 ; j < displayMarkerList[i].names.length ; j++) {
+                if(j == displayMarkerList[i].names.length - 1) {
+                    contributors += '<b>' + displayMarkerList[i].names[j] + '<b>';
+                    break;
+                }
+                contributors += '<b>' + displayMarkerList[i].names[j] + '<b>,';
+            }
+            
             var infowindow = new google.maps.InfoWindow({
                 content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + displayMarkerList[i].title + "&quot;);'>#" + displayMarkerList[i].title + "</a><br>\
-                            Contributors: <b>" + displayMarkerList[i].name + "</b><br>\
+                            Contributors: " + contributors + "<br>\
                             <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
                             + photoHtml + "</div><br>" + hiddenForm + "</div>",
                 maxWidth:   400
@@ -296,8 +305,6 @@
         };
         marker.addListener('click', function(){ return clickFunction(marker, infowindow);});
     }
-    
-    // setInterval(cleanOutOfBoundMarkers, 5000);
 
     function addMarker(thisForm) {
         var formAddMarker = $(thisForm);
