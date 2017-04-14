@@ -86,9 +86,16 @@ router.get('/searchByTitle', function(req, res) {
 	});
 });
 
+router.post('/reportPhoto', function(req, res) {
+	console.log(req.body);
+	console.log("Photo ID: " + req.body.photoID + " reported.");
+	console.log("with reason: " + req.body.reason);
+	res.send("Successful Report");
+});
+
 router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
-	//console.log(req.files);
+	// console.log(req.body);
 	//console.log(req.body.name);
 	if(req.body.lat == undefined || req.body.lng == undefined) {
 		res.send("Please specify a location");
@@ -100,6 +107,10 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 			return;
 		}
 	});
+	if(req.files.length == 0) {
+			res.send("No Files");
+			return;
+	}
 	var _photoIDs = [];
 	for (i in req.files) {
 		_photoIDs.push(req.files[i].filename);
@@ -138,7 +149,6 @@ router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
 	});
 	
 });
-
 
 
 module.exports = router;
