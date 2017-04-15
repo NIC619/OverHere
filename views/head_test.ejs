@@ -105,7 +105,6 @@
     function appendAndDisplayMarker(displayMarkerList, listToAppendTo, ifDisplay) {
         // console.log(displayMarkerList);
         for(var i = 0 ; i < displayMarkerList.length ; i++) {
-
             if(displayMarkerList[i].dir == undefined) displayMarkerList[i].dir = "north";
             var markerIcon = {
                 url: "/images/" + displayMarkerList[i].dir + ".png",
@@ -124,11 +123,21 @@
             if(displayMarkerList[i].photoIDs.length > 0 ) {
                 photoHtml = '<div style="height:120px;overflow:auto;">';
                 for (var j in displayMarkerList[i].photoIDs){
-                    photoHtml += "<a href='#photoModal' rel='modal:open'><img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
+                    photoHtml += "<a href='#" + displayMarkerList[i].photoIDs[j] + "' rel='modal:open'><img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
                     height='100px' width='100px' alt='Fail loading image...'></a>";
-                    // photoHtml += "<div id=" + displayMarkerList[i].photoIDs[j] + " style='display:none;'>\
-                    // <img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' alt='Fail loading image...'><br>\
-                    // <a href='#' rel='modal:close'></a></div>";
+                    // photoHtml += "<img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
+                    // height='100px' width='100px' alt='Fail loading image...'>";
+                    photoHtml += "<div id=" + displayMarkerList[i].photoIDs[j] + " style='display:none;'>\
+                    <img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' style='height:100%;width:100%' alt='Fail loading image...'><br>\
+                    <form id='reportPhoto' action='/reportPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+                    <input type='hidden' name='photoID' value=" + displayMarkerList[i].photoIDs[j] + "><br>\
+                    Report Photo:<br>\
+                    <input type='radio' name='reason' value='duplicated' checked>It's duplicated.<br>\
+                    <input type='radio' name='reason' value='disturbing'>It's disturbing.<br>\
+                    <input type='radio' name='reason' value='irrelevant'>It's irrelevant.<br>\
+                    <input type='button' id='reportbutton' value='Report' onclick='reportPhoto(this.form)' />\
+                    </form>\
+                    <a href='#' rel='modal:close'></a></div>";
                 }
             }
             else photoHtml = '<div style="height:10px;overflow:auto;">';
@@ -152,24 +161,30 @@
                 contributors += '<b>' + displayMarkerList[i].names[j] + '<b>,';
             }
             
-            var infowindow = new google.maps.InfoWindow({
+            var infoWindow = new google.maps.InfoWindow({
                 content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + displayMarkerList[i].title + "&quot;);'>#" + displayMarkerList[i].title + "</a><br>\
                             Contributors: " + contributors + "<br>\
                             <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
                             + photoHtml + "</div><br>" + hiddenForm + "</div>",
                 maxWidth:   400
             });
-            var clickFunction = function(_marker, _infowindow){
-                if(_infowindow.opened) {
-                    _infowindow.close();
-                    _infowindow.opened = false;
+
+            var clickFunction = function(_marker, _infoWindow){
+                if(_infoWindow.opened) {
+                    _infoWindow.close();
+                    _infoWindow.opened = false;
                 }
                 else {
-                    _infowindow.open(_marker.get('map'), _marker);
-                    _infowindow.opened = true;
+                    _infoWindow.open(_marker.get('map'), _marker);
+                    _infoWindow.opened = true;
                 }
             };
-            marker.addListener('click', function(){ return clickFunction(marker, infowindow);});
+            marker.addListener('click', function(localVarMarker, localVarInfoWindow){ return clickFunction(localVarMarker, localVarInfoWindow);}.bind(null, marker, infoWindow));
+            /*
+                如果是一般的event listener，可以用event.currentTarget來取回事件觸發的物件，但google map的event只會回傳marker
+                的location，且除了marker之外我們還需要infoWindow的值。所以改用bind的方式將當下的marker和infoWindo值bind給anonymous function
+                ，避免事件觸發時clickFunction只會reference到最新的_marker、_infoWindow值。
+            */
             listToAppendTo.push(marker);
         }
     }
@@ -292,23 +307,23 @@
             <input type='file' name='img' accept='image/*' multiple><br>\
             <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form></div>";
     
-        var infowindow = new google.maps.InfoWindow({
+        var infoWindow = new google.maps.InfoWindow({
             content: infoWindowContent,
             maxWidth:   400
         });
-        infowindow.open(map, marker);
-        infowindow.opened = true;
+        infoWindow.open(map, marker);
+        infoWindow.opened = true;
         openedMarkerList.push(marker);
-        var clickFunction = function(_marker, _infowindow){
-            _infowindow.close();
-            _infowindow.opened = false;
+        var clickFunction = function(_marker, _infoWindow){
+            _infoWindow.close();
+            _infoWindow.opened = false;
             _marker.setMap(null);
             var index = openedMarkerList.indexOf(_marker);
             if( index > -1) {
                 openedMarkerList.splice(index, 1);
             }
         };
-        marker.addListener('click', function(){ return clickFunction(marker, infowindow);});
+        marker.addListener('click', function(){ return clickFunction(marker, infoWindow);});
     }
 
     function reportPhoto(thisForm) {
