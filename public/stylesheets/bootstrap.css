@@ -3556,7 +3556,7 @@ a.thumbnail:hover {
 .popover-content ol {
   margin-bottom: 0;
 }
-.modal-open .dropdown-menu {
+/*.modal-open .dropdown-menu {
   z-index: 2050;
 }
 .modal-open .dropdown.open {
@@ -3597,7 +3597,7 @@ a.thumbnail:hover {
   border: 1px solid #999;
   border: 1px solid rgba(0, 0, 0, 0.3);
   *border: 1px solid #999;
-  /* IE6-7 */
+  
 
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
@@ -3663,7 +3663,7 @@ a.thumbnail:hover {
 }
 .modal-footer .btn-group .btn + .btn {
   margin-left: -1px;
-}
+}*/
 .dropdown {
   position: relative;
 }
