@@ -1,0 +1,13 @@
+<% layout('layout_html_test') -%>
+<ul>
+  <li><a class="active" href="/">OverHere</a></li>
+  <li><a href="/">Gallery</a></li>
+</ul>
+<div id="report-layout">
+    <% for(var i = 0 ; i < reportRecordList.length ; i++) { %>
+        <div id="report-div">
+            <div id="report-img"><img src ="/gallery/<%= reportRecordList[i].photoID %>" style="display:block; margin:auto; width:100%; height:100%" alt="Fail loading image..."></div>
+            <div id="report-text">Report reason: <%= reportRecordList[i].reason%></div>
+        </div>
+    <% } %>
+</div>

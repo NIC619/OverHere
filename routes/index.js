@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
-var markers = mongoose.model('marker_geo');
+var markers = mongoose.model('markerGeo');
+var reportRecords = mongoose.model('reportRecord');
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
@@ -76,26 +77,35 @@ router.get('/newLocation', function(req,res) {
 */
 router.get('/searchByTitle', function(req, res) {
 	// console.log(req.query.title);
-	markers.find({ title: req.query.title}, function(err, doc){
+	markers.find({ title: req.query.title}, function(err, searchResults){
 		if(doc===undefined) {
 			res.send([]);
 		}
 		else {
-			res.send(doc);
+			res.send(searchResults);
 		}
 	});
 });
 
+router.get('/reportRecords', function(req, res) {
+	reportRecords.find(function(err, _reportRecordList){
+		console.log(_reportRecordList);
+		res.render('layoutReportRecord', {title: 'OverHere', reportRecordList: _reportRecordList});
+	});
+});
+
 router.post('/reportPhoto', function(req, res) {
-	console.log(req.body);
 	console.log("Photo ID: " + req.body.photoID + " reported.");
 	console.log("with reason: " + req.body.reason);
+	var newReportRecord = new reportRecords();
+	newReportRecord.photoID = req.body.photoID;
+	newReportRecord.reason = req.body.reason;
+	newReportRecord.save();
 	res.send("Successful Report");
 });
 
 router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	var newMarker = new markers();
-	// console.log(req.body);
 	//console.log(req.body.name);
 	if(req.body.lat == undefined || req.body.lng == undefined) {
 		res.send("Please specify a location");

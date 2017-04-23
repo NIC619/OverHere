@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var marker_geo = new Schema({
+var markerGeo = new Schema({
 	lat: Number,
 	lng: Number,
 	names: [String],
@@ -9,6 +9,11 @@ var marker_geo = new Schema({
 	dir: String,
 	photoIDs: [String]
 });
+var reportRecord = new Schema({
+	photoID: String,
+	reason: String
+})
 
-mongoose.model('marker_geo' , marker_geo);
-mongoose.connect('mongodb://localhost/marker_database');
+mongoose.model('markerGeo', markerGeo);
+mongoose.model('reportRecord', reportRecord);
+mongoose.connect('mongodb://localhost/OverHereDatabase');
