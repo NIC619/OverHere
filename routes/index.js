@@ -89,7 +89,7 @@ router.get('/searchByTitle', function(req, res) {
 
 router.get('/reportRecords', function(req, res) {
 	reportRecords.find(function(err, _reportRecordList){
-		console.log(_reportRecordList);
+		// console.log(_reportRecordList);
 		res.render('layoutReportRecord', {title: 'OverHere', reportRecordList: _reportRecordList});
 	});
 });
