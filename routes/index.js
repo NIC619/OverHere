@@ -78,7 +78,7 @@ router.get('/newLocation', function(req,res) {
 router.get('/searchByTitle', function(req, res) {
 	// console.log(req.query.title);
 	markers.find({ title: req.query.title}, function(err, searchResults){
-		if(doc===undefined) {
+		if(searchResults===undefined) {
 			res.send([]);
 		}
 		else {
