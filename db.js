@@ -10,6 +10,7 @@ var markerGeo = new Schema({
 	photoIDs: [String]
 });
 var reportRecord = new Schema({
+	locationID: String,
 	photoID: String,
 	reason: String
 })

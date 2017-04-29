@@ -29,6 +29,11 @@ router.get('/delete', function(req, res) {
 	res.redirect('http://localhost:14741');
 })
 
+router.get('/deleteReport', function(req, res) {
+	reportRecords.find().remove().exec();
+	res.redirect('http://localhost:14741');
+})
+
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];
 	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
@@ -95,9 +100,18 @@ router.get('/reportRecords', function(req, res) {
 });
 
 router.post('/reportPhoto', function(req, res) {
-	console.log("Photo ID: " + req.body.photoID + " reported.");
+	console.log("Location ID: " + req.body.id + " with Photo ID: " + req.body.photoID + " reported.");
 	console.log("with reason: " + req.body.reason);
+	
+	reportRecords.find({ photoID: req.body.photoID}, function(err, searchResults) {
+		if( searchResults.length != 0 ) {
+			res.send("Photo already reported");
+			return;
+		}
+	});
+
 	var newReportRecord = new reportRecords();
+	newReportRecord.locationID = req.body.id;
 	newReportRecord.photoID = req.body.photoID;
 	newReportRecord.reason = req.body.reason;
 	newReportRecord.save();
@@ -112,10 +126,13 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 		return;
 	}
 	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
-		if(doc===undefined) {
+		if( doc.length != 0) {
 			res.send("Location already registered")
 			return;
 		}
+		// else {
+		// 	console.log(doc);
+		// }
 	});
 	if(req.files.length == 0) {
 			res.send("No Files");
