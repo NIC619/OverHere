@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <% include head_test %>
+    <% if( ifChoosenLocations ) { %>
+      <% include headChoosenLocations %>
+    <% } else { %>
+      <% include head_test %>
+    <% } %>
   </head>
   <body>
     <% include header %>

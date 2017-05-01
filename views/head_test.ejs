@@ -8,7 +8,7 @@
         html, body { position: relative; height: 100%; top:7%; margin: 0; padding: 0;}
         #map-canvas { position: relative; height:95%; margin: 0; padding: 0;}
         .report-layout { position: relative; height:100%; margin: 0; padding: 0;}
-        .report-div {position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px;}
+        .report-div {position: relative; display: inline-block; float: left; width: 15%; height: 20%; margin: 1px;}
         .report-img {position: relative; width: 100%; background-color: #DCDCDC;}
         .report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px;}
         /* The actual popup */
@@ -98,6 +98,7 @@
             background-color: #4CAF50;
         }
 </style>
+<% if( !ifReportRecords ) { %>
 <script type="text/javascript">
     var map;
     var ifDisplayLoadedMarker = true;
@@ -473,3 +474,4 @@
 <script async defer
 	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOugomkLdBEVv4wOb23mirFw8cTG_wz4o&callback=initialize">
 </script>
+<% } %>
