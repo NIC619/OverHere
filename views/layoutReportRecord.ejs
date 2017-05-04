@@ -10,7 +10,8 @@
             <div class="report-text">Report reason: <%= reportRecordList[i].reason%></div>
         </div>
         <div id="<%= reportRecordList[i].photoID %>" style="display: none;">
-            <%= reportRecordList[i].photoID %>
+            <img src ="/gallery/<%= reportRecordList[i].photoID %>" style="width: 100%; height: 90%" alt="Fail loading image..."><br>
+            <a target="_blank" href="/choosenLocations?id=<%= reportRecordList[i].locationID %>">Display Location</a>
         </div>
     <% } %>
 </div>

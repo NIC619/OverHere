@@ -21,18 +21,30 @@ var upload = multer({
 
 /* GET home page. */
 router.get('/', function(req, res) {
-	res.render('layout_body_test', {title: 'OverHere'});
+	res.render('layout_body_test', {title: 'OverHere', ifChoosenLocations: false, ifReportRecords: false});
 });
 
 router.get('/delete', function(req, res) {
 	markers.find().remove().exec();
 	res.redirect('http://localhost:14741');
-})
+});
 
 router.get('/deleteReport', function(req, res) {
 	reportRecords.find().remove().exec();
 	res.redirect('http://localhost:14741');
-})
+});
+
+router.get('/choosenLocations', function(req, res) {
+	markers.findById( req.query.id, function(err, searchResult) {
+		if( err ) {
+			console.log(err);
+			res.render("layout_body_test", { title: "OverHere", ifChoosenLocations: true, ifReportRecords: false, location: undefined});
+		}
+		else {
+			res.render("layout_body_test", { title: "OverHere", ifChoosenLocations: true, ifReportRecords: false, location: searchResult});
+		}
+	});
+});
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];
@@ -95,7 +107,7 @@ router.get('/searchByTitle', function(req, res) {
 router.get('/reportRecords', function(req, res) {
 	reportRecords.find(function(err, _reportRecordList){
 		// console.log(_reportRecordList);
-		res.render('layoutReportRecord', {title: 'OverHere', reportRecordList: _reportRecordList});
+		res.render('layoutReportRecord', {title: 'OverHere', ifChoosenLocations: false, ifReportRecords: true, reportRecordList: _reportRecordList});
 	});
 });
 
